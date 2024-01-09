@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        #main2 {
+            background-color: #fff;
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script language="javascript">
+        // 登入系統
+        function login() {
+            // 獲取使用者名稱和密碼
+            let account = document.getElementById('account').value;
+            let password = document.getElementById('password').value;
+            console.log(account, password);
+            // 使用 POST 方法向伺服器發送登入請求
+            URL = 'controller.py?act=login';
+            let formData = new FormData();
+            formData.append('account', account);
+            formData.append('password', password);
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                console.log(res);
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data); // Debugging statement
+                console.log(data["status"]);
+                // 判斷登入結果
+                if (data["status"] === "success") {
+                    if (data['type'] === '1') {
+                        window.location.href = 'customer.html?id=' + data['id'] + '&name=' + data['name'];
+                    } else if (data['type'] === '2') {
+                        window.location.href = 'merchant.html?id=' + data['id'] + '&name=' + data['name'];
+                    } else if (data['type'] === '3') {
+                        window.location.href = 'logistics.html?id=' + data['id'] + '&name=' + data['name'];
+                    }
+                
+                } else {
+                    // 登入失敗，顯示錯誤訊息
+                    document.getElementById('login-error').innerText = 'Login failed. Please try again.';
+                }
+            })
+        }
+
+        function register() {
+            // 獲取使用者名稱、帳號、密碼和確認密碼
+            let name = document.getElementById('name').value;
+            let account = document.getElementById('account_re').value;
+            let password = document.getElementById('password_re').value;
+            let confirmPassword = document.getElementById('confirmPassword').value;
+            let identity = document.getElementById('identity').value;
+            console.log(name, account, password, confirmPassword, identity);
+            // 檢查密碼和確認密碼是否相符
+            if (password !== confirmPassword) {
+                document.getElementById('register-error').innerText = 'Passwords do not match. Please try again.';
+                return;
+            }
+
+            // 使用 POST 方法向伺服器發送註冊請求
+            URL = 'controller.py?act=register';
+            let formData = new FormData();
+            formData.append('name', name);
+            formData.append('account', account);
+            formData.append('password', password);
+            formData.append('type', identity);
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                console.log(res);
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data); // Debugging statement
+                console.log(data["status"]);
+                // 判斷註冊結果
+                if (data["status"] === "success") {
+                    // 註冊成功，顯示成功訊息
+                    alert('Registration successful. Please login.');
+                } else {
+                    // 註冊失敗，顯示錯誤訊息
+                    document.getElementById('register-error').innerText = 'Registration failed. Please try again.';
+                }
+            })
+            // .catch(function(error) {
+            //     console.log(error); // Debugging statement
+            //     // 處理錯誤
+            //     alert('An error occurred. Please try again later.');
+            // });
+        }
+    </script>
+</head>
+<body > 
+    <div id="main2">
+        <h2>Login</h2>
+        <input type="text" id="account" placeholder="Account">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <div id="login-error" class="error-message"></div>
+    </div>
+    
+    <div id="main2">
+        <h2>Register</h2>
+        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="account_re" placeholder="Account">
+        <input type="password" id="password_re" placeholder="Password">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password">
+        <select id="identity">
+            <option value="1">顧客</option>
+            <option value="2">廠商</option>
+        </select>
+        <button onclick="register()">Register</button>
+        <div id="register-error" class="error-message"></div>
+    </div>
+</body>
+</html>

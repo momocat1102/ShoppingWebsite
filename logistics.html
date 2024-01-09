@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Merchant view</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #name_h1 {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #main {
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        #price {
+            margin: 20px auto;
+            width: 80%;
+            justify-content: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        input[type="number"] {
+            width: 50px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .btn-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-group button {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        // 加載產品列表的函數
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name');
+        const id = urlParams.get('id');
+
+        function loadList() {
+            // Retrieve the "name" parameter from the URL
+            console.log('Name:', name);
+            let nameElement = document.getElementById('name_h1');
+            nameElement.innerHTML = '<h1>' + name + ', 您好</h1>';
+
+            console.log("loadList");
+            // Define the URL to retrieve the product list data from the server
+            URL = 'controller.py?act=show_order_logistics';
+            // Use the POST method to retrieve data from the server
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                let div = document.getElementById('main');
+                let result = "<table>";
+
+                // 表頭
+                result += "<tr>";
+                result += "<th>Customer Name</th>";
+                result += "<th>Product Name</th>";
+                result += "<th>Describe</th>";
+                result += "<th>Unit Price</th>";
+                result += "<th>Quantity</th>";
+                result += "<th>State</th>";
+                result += "<th>Action</th>";
+                result += "</tr>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '4') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '5') {                            
+                            let status = "";
+                            if (row[index] === 1) {
+                                status = "送出訂單";
+                            } else if (row[index] === 2) {
+                                status = "廠商處理中";
+                            } else if (row[index] === 3) {
+                                status = "寄送中";
+                            } else if (row[index] === 4) {
+                                status = "已送達";
+                            }
+                            result += "<td>" + status + "</td>";
+                        }
+                    }
+
+                    // 添加操作按鈕
+                    result += "<td>";
+                    result += "<button style='margin-left: 10px;' onclick='updateOrderStatus(" + row[6] + ")'>已送達</button>";
+                    result += "</td>";
+
+                    result += "</tr>";
+                }
+
+                result += "</table>";
+
+                div.innerHTML = result;
+            });
+        }
+
+
+        function updateOrderStatus(id_order) {
+            // 在這裡編寫更新訂單狀態的邏輯
+            console.log("updateOrderStatus");
+            
+            URL = 'controller.py?act=update_order_status_logistics';
+            let formData = new FormData();
+            formData.append('id_order', id_order);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res
+            })
+            .then(function(data) {
+                console.log(data);
+                alert("更新訂單狀態成功");
+                loadList();
+            });
+        }
+
+        function logout() {
+            // 在这里编写登出的逻辑
+            window.location.href = "view.html";
+        }
+
+    </script>
+</head>
+<body onload="loadList()">
+    <div id="name_h1"></div>
+    <div id="main"></div>
+    <div class="btn-group">
+        <button onclick="logout()">登出</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer view</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #name_h1 {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #main {
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        #price {
+            margin: 20px auto;
+            width: 80%;
+            justify-content: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        input[type="number"] {
+            width: 50px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .btn-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-group button {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        // 加載產品列表的函數
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name');
+        const id = urlParams.get('id');
+
+        function loadList() {
+            // Retrieve the "name" parameter from the URL
+            
+            console.log('Name:', name);
+            let nameElement = document.getElementById('name_h1');
+            nameElement.innerHTML = '<h1>' + name + ', 您好</h1>';
+
+            console.log("loadList");
+            // 定義從伺服器獲取產品列表數據的 URL
+            URL = 'controller.py?act=browse';
+            
+            // 使用 POST 方法從伺服器獲取數據
+            fetch(URL, {
+                method: 'POST',
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                // 處理接收到的數據，並動態更新 HTML
+                let div = document.getElementById('main');
+                let result = "<table>";
+
+                // 表頭
+                result += "<tr>";                
+                result += "<th>Merchant Name</th>";
+                result += "<th>Vendor Rating</th>";
+                result += "<th>ProductID</th>";
+                result += "<th>Item</th>";
+                result += "<th>Describe</th>";
+                result += "<th>Unit Price</th>";
+                result += "<th>Quantity</th>";
+                result += "<th></th>";
+                result += "</tr>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '4') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '5') {
+                            result += "<td>" + row[index] + "</td>";
+                        }
+                    }
+                    // 添加選擇數量
+                    result += "<td><input id='quantity" + row[2] + "' type='number' value='1' min='1' step='1'></td>";
+
+                    // 添加加入購物車按鈕，並指定對應的產品ID
+                    result += "<td><button onclick='plus_prd(" + row[2] + ")'>Add to cart</button></td>";
+                    result += "</tr>";
+                }
+
+                div.innerHTML = result;
+
+            });
+        }
+
+        async function calculateSettlement() {
+            URL = 'controller.py?act=settlement';
+            let formData = new FormData();
+            formData.append('id_customer', id);
+            let total_price = 0;
+            let quantity = 0;
+
+            await fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                let div = document.getElementById('price');
+                let result = ""
+
+                result += "<div style='display: flex; flex-direction: row; align-items: center;'>";
+                result += "<button style='margin-right: 10px;' onclick='checkout()'>結帳</button>";
+                result += "<p style='margin-right: 10px;'>總數量: " + data[0] + "</p>";
+                result += "<p style='margin-right: 10px;'>總價格: " + data[1] + "</p>";
+                result += "</div>";
+                div.innerHTML = result;
+            });
+            
+        }
+
+        function show_cart() {
+            // 在這裡編寫查看購物車的邏輯
+            console.log("show_cart");
+            URL = 'controller.py?act=cart';
+            let formData = new FormData();
+            formData.append('id_customer', id);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                let div = document.getElementById('main');
+                let result = "<table>";
+
+                // 表頭
+                result += "<tr>";
+                result += "<th>ProductID</th>";
+                result += "<th>Item</th>";
+                result += "<th>Describe</th>";
+                result += "<th>Unit Price</th>";
+                result += "<th>Quantity</th>";
+                result += "<th></th>";
+                result += "</tr>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '4') {
+                            result += "<td>" + row[index] + "</td>";
+                        }
+                    }
+                    // 添加刪除按鈕，並指定對應的產品ID
+                    result += "<td><button onclick='delete_prd(" + row[0] + ")'>Delete</button></td>";
+                    result += "</tr>";
+                }
+
+                result += "</table>";
+
+                div.innerHTML = result;
+
+            });
+            calculateSettlement()
+        }
+
+        function plus_prd(id_item) {
+            // 在這裡編寫加入購物車的邏輯
+            console.log("plus_prd");
+            console.log(id);
+            let quantity = document.getElementById('quantity' + id_item).value;
+            URL = 'controller.py?act=plus_prd';
+            let formData = new FormData();
+            formData.append('id_item', id_item);
+            formData.append('id_customer', id);
+            formData.append('quantity', quantity);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res;
+            })
+            .then(function(data) {
+                console.log(data);
+                alert("加入購物車成功");
+            });
+        }
+
+        function delete_prd(id_item) {
+            // 在這裡編寫刪除購物車內產品的邏輯
+            console.log("delete_prd");
+            URL = 'controller.py?act=subtract';
+            let formData = new FormData();
+            formData.append('id_item', id_item);
+            formData.append('id_customer', id);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res
+            })
+            .then(function(data) {
+                console.log(data);
+                alert("刪除購物車內產品成功");
+                show_cart();
+            });
+
+        }
+
+        function checkout() {
+            // 在這裡編寫結帳的邏輯
+            console.log("checkout");
+            URL = 'controller.py?act=checkout';
+            let formData = new FormData();
+            formData.append('id_customer', id);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res
+            })
+            .then(function(data) {
+                console.log(data);
+                alert("結帳成功");
+                show_cart();
+            });
+        }
+
+        function show_order() {
+            // 在這裡編寫查看訂單的邏輯
+            console.log("show_order");
+            URL = 'controller.py?act=show_order_customer';
+            let formData = new FormData();
+            formData.append('id_customer', id);
+
+            fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                console.log(data);
+                let div = document.getElementById('main');
+                let result = "<table>";
+
+                // 表頭
+                result += "<tr>";
+                result += "<th>OrderID</th>";
+                result += "<th>Item</th>";
+                result += "<th>Describe</th>";
+                result += "<th>Unit Price</th>";
+                result += "<th>Quantity</th>";
+                result += "<th>訂單狀態</th>";
+                result += "</tr>";
+
+                // 每一行數據
+                for (let row of data) {
+                    result += "<tr>";
+
+                    // 每個屬性，生成 HTML
+                    for (let index in row) {
+                        if (index === '0') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '1') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '2') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '3') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '4') {
+                            result += "<td>" + row[index] + "</td>";
+                        } else if (index === '5') {                            
+                            let status = "";
+                            if (row[index] === 1) {
+                                status = "送出訂單";
+                            } else if (row[index] === 2) {
+                                status = "廠商處理中";
+                            } else if (row[index] === 3) {
+                                status = "寄送中";
+                            } else if (row[index] === 4) {
+                                status = "已送達";
+                            }
+                            result += "<td>" + status + "</td>";
+                            if (row[index] === 4) {
+                                result += "<td>";
+                                result += "<select id='scoring_" + row[0] + "'>"; // Use the order ID as the select element ID
+                                result += "<option value='0'>0</option>";
+                                result += "<option value='1'>1</option>";
+                                result += "<option value='2'>2</option>";
+                                result += "<option value='3'>3</option>";
+                                result += "<option value='4'>4</option>";
+                                result += "<option value='5'>5</option>";
+                                result += "</select>";
+                                result += "<button style='margin-left: 10px;' onclick='score(" + row[0] + ")'>評分</button>";
+                                result += "</td>";
+                            }
+
+                        }
+                    }
+                    result += "</tr>";
+                }
+
+                result += "</table>";
+
+                div.innerHTML = result;
+
+            });
+        }
+
+        async function score(id_order) {
+            // 在這裡編寫評分的邏輯
+            
+            let score = document.getElementById('scoring_' + id_order).value;
+            console.log(id_order, score, id);
+            URL = 'controller.py?act=score_order';
+            let formData = new FormData();
+            formData.append('id_order', id_order);
+            formData.append('score', score);
+            formData.append('id_customer', id);
+
+            await fetch(URL, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                return res;
+            })
+            .then(function(data) {
+                console.log(data);
+
+                alert("評分成功");
+
+                show_order();
+            });
+        }
+
+        function logout() {
+            // 在这里编写登出的逻辑
+            window.location.href = "view.html";
+        }
+
+    </script>
+</head>
+<body onload="loadList()">
+    <div id="name_h1"></div>
+    <div id="main"></div>
+    <div id="price"></div>
+    <div class="btn-group">
+        <button onclick='loadList()'>查看商品</button>
+        <button onclick='show_cart()'>查看購物車</button>
+        <button onclick='show_order()'>查看訂單</button>
+        <button onclick="logout()">登出</button>
+    </div>
+</body>
+</html>
